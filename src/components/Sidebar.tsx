@@ -97,7 +97,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sidebar Navigation */}
       <aside
         id="sidebar-container"
-        className={`fixed top-0 left-0 bottom-0 z-50 w-72 md:w-80 bg-stone-900 text-stone-100 flex flex-col border-r border-stone-800 transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed top-0 left-0 bottom-0 z-50 w-72 md:w-80 bg-stone-900 text-stone-100 flex flex-col border-r border-stone-800 transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${
           isOpenMobile ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

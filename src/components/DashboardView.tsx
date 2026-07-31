@@ -1,28 +1,28 @@
 import React from 'react';
 import { Transaction, ViewTab } from '../types';
 import { formatMoney, getTodayDateString, formatDateReadable } from '../utils/storage';
-import { 
-  PlusCircle, 
-  TrendingUp, 
-  DollarSign, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Calendar, 
-  Calculator, 
-  BarChart3, 
+import {
+  PlusCircle,
+  TrendingUp,
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Calculator,
+  BarChart3,
   Trash2,
   AlertCircle,
   Edit2
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  Legend, 
-  CartesianGrid 
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
 } from 'recharts';
 
 interface DashboardViewProps {
@@ -119,9 +119,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Daily Business Overview
           </h2>
-          <p className="text-stone-200 text-sm sm:text-base mt-1">
-            Track daily ingredient purchases, sales income, and your net profits easily.
-          </p>
         </div>
 
         {/* High-Contrast Big Quick Buttons */}
@@ -185,24 +182,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* This Month's Net Profit */}
-        <div className={`bg-white border-2 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow ${
-          monthProfit >= 0 ? 'border-purple-300' : 'border-rose-300'
-        }`}>
+        <div className={`bg-white border-2 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow ${monthProfit >= 0 ? 'border-purple-300' : 'border-rose-300'
+          }`}>
           <div className="flex items-center justify-between mb-3">
-            <span className={`text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg ${
-              monthProfit >= 0 ? 'bg-purple-50 text-purple-800 border border-purple-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-            }`}>
+            <span className={`text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg ${monthProfit >= 0 ? 'bg-purple-50 text-purple-800 border border-purple-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+              }`}>
               This Month's Profit
             </span>
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-              monthProfit >= 0 ? 'bg-purple-100 text-purple-700' : 'bg-rose-100 text-rose-700'
-            }`}>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${monthProfit >= 0 ? 'bg-purple-100 text-purple-700' : 'bg-rose-100 text-rose-700'
+              }`}>
               <Calculator className="w-6 h-6" />
             </div>
           </div>
-          <div className={`${statValClass} font-extrabold ${
-            monthProfit >= 0 ? 'text-purple-700' : 'text-rose-600'
-          }`}>
+          <div className={`${statValClass} font-extrabold ${monthProfit >= 0 ? 'text-purple-700' : 'text-rose-600'
+            }`}>
             {formatMoney(monthProfit, currencySymbol)}
           </div>
           <p className="text-xs text-slate-500 mt-2">
@@ -219,9 +212,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <BarChart3 className="w-6 h-6 text-amber-600" />
               Monthly Sales vs Expenses Trend
             </h3>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Compare your income, costs, and profits month by month
-            </p>
           </div>
           <button
             id="go-to-reports-btn"
@@ -238,7 +228,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="monthName" stroke="#64748b" tick={{ fill: '#475569', fontSize: 12 }} />
               <YAxis stroke="#64748b" tick={{ fill: '#475569', fontSize: 12 }} />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderRadius: '12px', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                 formatter={(value: any) => [formatMoney(value as number, currencySymbol), '']}
               />
@@ -265,10 +255,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </span>
           </div>
           <h4 className="text-xl font-bold text-slate-900 group-hover:text-purple-900">
-            Cookie Batch Profit Calculator
+            Profit Calculator
           </h4>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">
-            Calculate exact pistachio paste, kunafa dough, and box costs per cookie to find your break-even price!
+            算profit
           </p>
         </button>
 
@@ -287,7 +277,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Daily, Monthly & Yearly Reports
           </h4>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">
-            See where your money goes: Ingredients vs Stall Rental vs Packaging breakdown.
+            看报告
           </p>
         </button>
       </div>
@@ -318,9 +308,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className="py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50 px-2 rounded-xl transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 ${
-                    item.type === 'sales' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 ${item.type === 'sales' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
+                    }`}>
                     {item.type === 'sales' ? '💰' : '💸'}
                   </div>
                   <div>
@@ -343,9 +332,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className={`text-right font-extrabold text-base sm:text-lg ${
-                    item.type === 'sales' ? 'text-emerald-600' : 'text-amber-700'
-                  }`}>
+                  <div className={`text-right font-extrabold text-base sm:text-lg ${item.type === 'sales' ? 'text-emerald-600' : 'text-amber-700'
+                    }`}>
                     {item.type === 'sales' ? '+' : '-'}{formatMoney(item.type === 'sales' ? item.totalPrice : item.price, currencySymbol)}
                   </div>
                   <div className="flex items-center gap-1">
