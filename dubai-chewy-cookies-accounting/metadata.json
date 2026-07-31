@@ -1,0 +1,6 @@
+{
+  "name": "Dubai Chewy Cookies Accounting",
+  "description": "Simple expense, sales, and profit accounting app tailored for Dubai Chewy Cookies business with senior-friendly large text and clear trends.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
