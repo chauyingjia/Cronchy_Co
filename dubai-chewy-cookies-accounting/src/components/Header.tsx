@@ -60,19 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* High-Contrast Quick Action Buttons & Font Resizer */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Senior Font Size Resizer Button */}
-          <button
-            id="toggle-font-size-button"
-            onClick={cycleFontSize}
-            title="Adjust Text Size for Easier Reading"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 border border-slate-300 text-slate-800 hover:bg-slate-200 text-xs font-medium cursor-pointer transition-colors"
-          >
-            <Type className="w-4 h-4 text-amber-600" />
-            <span className="hidden md:inline">Text Size:</span>
-            <span className="uppercase font-bold text-amber-700">
-              {fontSizeMode === 'extra-large' ? 'XL' : fontSizeMode === 'large' ? 'Large' : 'Std'}
-            </span>
-          </button>
+
 
           {/* Large "+ Expense" High-Contrast Button */}
           <button

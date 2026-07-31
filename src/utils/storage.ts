@@ -1,8 +1,8 @@
 import { ExpenseItem, SalesItem, Transaction } from '../types';
 import { INITIAL_TRANSACTIONS } from '../data/initialData';
 
-const STORAGE_KEY = 'dubai_cookie_accounting_data';
-const SETTINGS_KEY = 'dubai_cookie_accounting_settings';
+const STORAGE_KEY = 'dubai_cookie_accounting_data_v2';
+const SETTINGS_KEY = 'dubai_cookie_accounting_settings_v2';
 
 export interface AppSettings {
   currencySymbol: string;
@@ -12,30 +12,6 @@ export interface AppSettings {
 export const DEFAULT_SETTINGS: AppSettings = {
   currencySymbol: 'RM', // Default to RM or $
   fontSizeMode: 'standard', // Default to standard text size as requested
-};
-
-export const loadTransactions = (): Transaction[] => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      // First time init
-      saveTransactions(INITIAL_TRANSACTIONS);
-      return INITIAL_TRANSACTIONS;
-    }
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : INITIAL_TRANSACTIONS;
-  } catch (e) {
-    console.error('Failed to load transactions:', e);
-    return INITIAL_TRANSACTIONS;
-  }
-};
-
-export const saveTransactions = (transactions: Transaction[]): void => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
-  } catch (e) {
-    console.error('Failed to save transactions:', e);
-  }
 };
 
 export const loadSettings = (): AppSettings => {

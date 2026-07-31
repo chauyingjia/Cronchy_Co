@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ExpenseCategory, ExpenseItem } from '../types';
 import { formatMoney, formatDateReadable } from '../utils/storage';
-import { PlusCircle, Search, Filter, Trash2, Calendar, Tag, AlertCircle } from 'lucide-react';
+import { PlusCircle, Search, Filter, Trash2, Calendar, Tag, AlertCircle, Edit2 } from 'lucide-react';
 
 interface ExpensesPageProps {
   expenses: ExpenseItem[];
@@ -9,6 +9,7 @@ interface ExpensesPageProps {
   fontSizeMode: 'standard' | 'large' | 'extra-large';
   onOpenAddExpense: () => void;
   onDeleteExpense: (id: string) => void;
+  onEditExpense: (expense: ExpenseItem) => void;
 }
 
 const CATEGORIES: ('All' | ExpenseCategory)[] = [
@@ -27,6 +28,7 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
   fontSizeMode,
   onOpenAddExpense,
   onDeleteExpense,
+  onEditExpense,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'All' | ExpenseCategory>('All');
@@ -176,13 +178,22 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
                   <div className="text-xl sm:text-2xl font-extrabold text-amber-700">
                     {formatMoney(exp.price, currencySymbol)}
                   </div>
-                  <button
-                    onClick={() => onDeleteExpense(exp.id)}
-                    className="p-2.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                    title="Delete expense"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <button
+                      onClick={() => onEditExpense(exp)}
+                      className="p-2.5 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                      title="Edit expense"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteExpense(exp.id)}
+                      className="p-2.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Delete expense"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

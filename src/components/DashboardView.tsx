@@ -11,7 +11,8 @@ import {
   Calculator, 
   BarChart3, 
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Edit2
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -32,6 +33,8 @@ interface DashboardViewProps {
   onOpenAddSales: () => void;
   onSelectTab: (tab: ViewTab) => void;
   onDeleteTransaction: (id: string) => void;
+  onEditExpense: (expense: any) => void;
+  onEditSales: (sales: any) => void;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
@@ -42,6 +45,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   onOpenAddSales,
   onSelectTab,
   onDeleteTransaction,
+  onEditExpense,
+  onEditSales,
 }) => {
   const todayStr = getTodayDateString();
   const currentYearMonth = todayStr.substring(0, 7); // "YYYY-MM"
@@ -141,81 +146,63 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </div>
 
-      {/* 4 Large Summary Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Today's Sales */}
+      {/* 3 Large Summary Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* This Month's Sales */}
         <div className="bg-white border-2 border-emerald-200 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-              Today's Income
+              This Month's Income
             </span>
             <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
               <ArrowUpRight className="w-6 h-6" />
             </div>
           </div>
           <div className={`${statValClass} font-extrabold text-emerald-700`}>
-            {formatMoney(todaySales, currencySymbol)}
+            {formatMoney(monthSales, currencySymbol)}
           </div>
           <p className="text-xs text-slate-500 mt-2">
-            Total sales collected today
+            Total sales collected this month
           </p>
         </div>
 
-        {/* Today's Expenses */}
+        {/* This Month's Expenses */}
         <div className="bg-white border-2 border-amber-200 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-extrabold uppercase tracking-wider text-amber-800 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-              Today's Expenses
+              This Month's Expenses
             </span>
             <div className="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center">
               <ArrowDownRight className="w-6 h-6" />
             </div>
           </div>
           <div className={`${statValClass} font-extrabold text-amber-700`}>
-            {formatMoney(todayExpenses, currencySymbol)}
+            {formatMoney(monthExpenses, currencySymbol)}
           </div>
           <p className="text-xs text-slate-500 mt-2">
-            Ingredients & supplies bought today
-          </p>
-        </div>
-
-        {/* Today's Net Profit */}
-        <div className={`bg-white border-2 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow ${
-          todayProfit >= 0 ? 'border-emerald-300' : 'border-rose-300'
-        }`}>
-          <div className="flex items-center justify-between mb-3">
-            <span className={`text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg ${
-              todayProfit >= 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-            }`}>
-              Today's Profit
-            </span>
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-              todayProfit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-            }`}>
-              <DollarSign className="w-6 h-6" />
-            </div>
-          </div>
-          <div className={`${statValClass} font-extrabold ${
-            todayProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
-          }`}>
-            {formatMoney(todayProfit, currencySymbol)}
-          </div>
-          <p className="text-xs text-slate-500 mt-2">
-            Sales minus Expenses today
+            Total ingredients & supplies this month
           </p>
         </div>
 
         {/* This Month's Net Profit */}
-        <div className="bg-white border-2 border-purple-200 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow">
+        <div className={`bg-white border-2 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow ${
+          monthProfit >= 0 ? 'border-purple-300' : 'border-rose-300'
+        }`}>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-extrabold uppercase tracking-wider text-purple-800 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200">
+            <span className={`text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg ${
+              monthProfit >= 0 ? 'bg-purple-50 text-purple-800 border border-purple-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+            }`}>
               This Month's Profit
             </span>
-            <div className="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center">
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
+              monthProfit >= 0 ? 'bg-purple-100 text-purple-700' : 'bg-rose-100 text-rose-700'
+            }`}>
               <Calculator className="w-6 h-6" />
             </div>
           </div>
-          <div className={`${statValClass} font-extrabold text-purple-700`}>
+          <div className={`${statValClass} font-extrabold ${
+            monthProfit >= 0 ? 'text-purple-700' : 'text-rose-600'
+          }`}>
             {formatMoney(monthProfit, currencySymbol)}
           </div>
           <p className="text-xs text-slate-500 mt-2">
@@ -361,13 +348,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   }`}>
                     {item.type === 'sales' ? '+' : '-'}{formatMoney(item.type === 'sales' ? item.totalPrice : item.price, currencySymbol)}
                   </div>
-                  <button
-                    onClick={() => onDeleteTransaction(item.id)}
-                    className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                    title="Delete entry"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => item.type === 'sales' ? onEditSales(item) : onEditExpense(item)}
+                      className="p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                      title="Edit entry"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteTransaction(item.id)}
+                      className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Delete entry"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

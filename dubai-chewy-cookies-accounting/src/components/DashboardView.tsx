@@ -1,27 +1,27 @@
 import React from 'react';
 import { Transaction, ViewTab } from '../types';
 import { formatMoney, getTodayDateString, formatDateReadable } from '../utils/storage';
-import { 
-  PlusCircle, 
-  TrendingUp, 
-  DollarSign, 
-  ArrowUpRight, 
-  ArrowDownRight, 
-  Calendar, 
-  Calculator, 
-  BarChart3, 
+import {
+  PlusCircle,
+  TrendingUp,
+  DollarSign,
+  ArrowUpRight,
+  ArrowDownRight,
+  Calendar,
+  Calculator,
+  BarChart3,
   Trash2,
   AlertCircle
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  Legend, 
-  CartesianGrid 
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  CartesianGrid
 } from 'recharts';
 
 interface DashboardViewProps {
@@ -107,7 +107,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="bg-gradient-to-r from-amber-900 via-stone-900 to-amber-950 p-5 sm:p-6 rounded-3xl border-2 border-amber-600/40 shadow-lg text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-amber-400 font-bold text-sm tracking-wide uppercase mb-1">
-            <span>🍪 Dubai Chewy Cookies Studio</span>
+            <span>🍪 Dubai Chewy Cookies</span>
             <span className="text-stone-500">•</span>
             <span className="text-stone-300 font-semibold">{formatDateReadable(todayStr)}</span>
           </div>
@@ -115,7 +115,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Daily Business Overview
           </h2>
           <p className="text-stone-200 text-sm sm:text-base mt-1">
-            Track daily ingredient purchases, sales income, and your net profits easily.
+            Track daily purchases, sales income and net profits.
           </p>
         </div>
 
@@ -180,28 +180,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
 
         {/* Today's Net Profit */}
-        <div className={`bg-white border-2 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow ${
-          todayProfit >= 0 ? 'border-emerald-300' : 'border-rose-300'
-        }`}>
+        <div className={`bg-white border-2 p-5 rounded-3xl shadow-xs hover:shadow-md transition-shadow ${todayProfit >= 0 ? 'border-emerald-300' : 'border-rose-300'
+          }`}>
           <div className="flex items-center justify-between mb-3">
-            <span className={`text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg ${
-              todayProfit >= 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-            }`}>
+            <span className={`text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-lg ${todayProfit >= 0 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+              }`}>
               Today's Profit
             </span>
-            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
-              todayProfit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-            }`}>
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${todayProfit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+              }`}>
               <DollarSign className="w-6 h-6" />
             </div>
           </div>
-          <div className={`${statValClass} font-extrabold ${
-            todayProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
-          }`}>
+          <div className={`${statValClass} font-extrabold ${todayProfit >= 0 ? 'text-emerald-700' : 'text-rose-600'
+            }`}>
             {formatMoney(todayProfit, currencySymbol)}
           </div>
           <p className="text-xs text-slate-500 mt-2">
-            Sales minus Expenses today
+            Profits daily
           </p>
         </div>
 
@@ -251,7 +247,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="monthName" stroke="#64748b" tick={{ fill: '#475569', fontSize: 12 }} />
               <YAxis stroke="#64748b" tick={{ fill: '#475569', fontSize: 12 }} />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderRadius: '12px', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                 formatter={(value: any) => [formatMoney(value as number, currencySymbol), '']}
               />
@@ -331,9 +327,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 className="py-3.5 flex items-center justify-between gap-3 hover:bg-slate-50 px-2 rounded-xl transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 ${
-                    item.type === 'sales' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-lg shrink-0 ${item.type === 'sales' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
+                    }`}>
                     {item.type === 'sales' ? '💰' : '💸'}
                   </div>
                   <div>
@@ -356,9 +351,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <div className={`text-right font-extrabold text-base sm:text-lg ${
-                    item.type === 'sales' ? 'text-emerald-600' : 'text-amber-700'
-                  }`}>
+                  <div className={`text-right font-extrabold text-base sm:text-lg ${item.type === 'sales' ? 'text-emerald-600' : 'text-amber-700'
+                    }`}>
                     {item.type === 'sales' ? '+' : '-'}{formatMoney(item.type === 'sales' ? item.totalPrice : item.price, currencySymbol)}
                   </div>
                   <button

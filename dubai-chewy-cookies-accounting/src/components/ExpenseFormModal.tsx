@@ -98,7 +98,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div 
+      <div
         id="expense-modal-container"
         className="w-full max-w-lg bg-white border-2 border-slate-200 rounded-3xl shadow-xl text-slate-900 overflow-hidden my-auto"
       >
@@ -112,9 +112,6 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-950">
                 Record New Expense
               </h2>
-              <p className="text-xs sm:text-sm text-slate-900 font-medium">
-                Bought ingredients or stall equipment
-              </p>
             </div>
           </div>
           <button
@@ -199,9 +196,8 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                 setItemName(e.target.value);
                 setErrors((prev) => ({ ...prev, itemName: undefined }));
               }}
-              className={`w-full bg-slate-50 border-2 ${
-                errors.itemName ? 'border-rose-500' : 'border-slate-300 focus:border-amber-500'
-              } rounded-2xl px-4 ${inputSizeClass} text-slate-900 placeholder-slate-400 focus:outline-none`}
+              className={`w-full bg-slate-50 border-2 ${errors.itemName ? 'border-rose-500' : 'border-slate-300 focus:border-amber-500'
+                } rounded-2xl px-4 ${inputSizeClass} text-slate-900 placeholder-slate-400 focus:outline-none`}
             />
             {errors.itemName && (
               <p className="text-sm font-bold text-rose-600">{errors.itemName}</p>
@@ -220,11 +216,10 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   key={cat.label}
                   type="button"
                   onClick={() => setCategory(cat.label)}
-                  className={`p-2.5 rounded-2xl border-2 font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer transition-all ${
-                    category === cat.label
+                  className={`p-2.5 rounded-2xl border-2 font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer transition-all ${category === cat.label
                       ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs scale-[1.02]'
                       : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
-                  }`}
+                    }`}
                 >
                   <span className="text-lg">{cat.icon}</span>
                   <span className="truncate">{cat.label}</span>
@@ -257,9 +252,8 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   setPrice(e.target.value);
                   setErrors((prev) => ({ ...prev, price: undefined }));
                 }}
-                className={`w-full bg-slate-50 border-2 ${
-                  errors.price ? 'border-rose-500' : 'border-slate-300 focus:border-amber-500'
-                } rounded-2xl pl-14 pr-4 py-3.5 text-2xl font-bold text-amber-800 focus:outline-none`}
+                className={`w-full bg-slate-50 border-2 ${errors.price ? 'border-rose-500' : 'border-slate-300 focus:border-amber-500'
+                  } rounded-2xl pl-14 pr-4 py-3.5 text-2xl font-bold text-amber-800 focus:outline-none`}
               />
             </div>
             {errors.price && (

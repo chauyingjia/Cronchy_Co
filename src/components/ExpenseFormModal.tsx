@@ -10,6 +10,7 @@ interface ExpenseFormModalProps {
   onSaveExpense: (expense: Omit<ExpenseItem, 'id' | 'createdAt'>) => void;
   currencySymbol: string;
   fontSizeMode: 'standard' | 'large' | 'extra-large';
+  initialData?: ExpenseItem;
 }
 
 const CATEGORIES: { label: ExpenseCategory; icon: string }[] = [
@@ -27,6 +28,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   onSaveExpense,
   currencySymbol,
   fontSizeMode,
+  initialData,
 }) => {
   const [date, setDate] = useState<string>(getTodayDateString());
   const [itemName, setItemName] = useState<string>('');
@@ -39,15 +41,23 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
-      setDate(getTodayDateString()); // Defaults to current real date
-      setItemName('');
-      setCategory('Ingredients');
-      setPrice('');
-      setRemarks('');
+      if (initialData) {
+        setDate(initialData.date);
+        setItemName(initialData.itemName);
+        setCategory(initialData.category);
+        setPrice(initialData.price.toString());
+        setRemarks(initialData.remarks || '');
+      } else {
+        setDate(getTodayDateString()); // Defaults to current real date
+        setItemName('');
+        setCategory('Ingredients');
+        setPrice('');
+        setRemarks('');
+      }
       setErrors({});
       setShowSuccessBadge(false);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -110,10 +120,10 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-950">
-                Record New Expense
+                {initialData ? 'Edit Expense' : 'Record New Expense'}
               </h2>
               <p className="text-xs sm:text-sm text-slate-900 font-medium">
-                Bought ingredients or stall equipment
+                {initialData ? 'Update expense details' : 'Bought ingredients or stall equipment'}
               </p>
             </div>
           </div>
@@ -130,7 +140,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         {showSuccessBadge && (
           <div className="m-4 p-4 bg-emerald-50 border-2 border-emerald-400 rounded-2xl flex items-center gap-3 text-emerald-800 font-bold text-lg animate-bounce">
             <CheckCircle2 className="w-8 h-8 text-emerald-600 shrink-0" />
-            <span>Expense Recorded Successfully!</span>
+            <span>{initialData ? 'Expense Updated Successfully!' : 'Expense Recorded Successfully!'}</span>
           </div>
         )}
 
@@ -297,7 +307,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               type="submit"
               className="flex-2 py-3.5 px-6 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-lg shadow-md cursor-pointer active:scale-98 transition-all border border-amber-600"
             >
-              💾 Save Expense
+              💾 {initialData ? 'Save Changes' : 'Save Expense'}
             </button>
           </div>
         </form>

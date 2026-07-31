@@ -76,54 +76,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
         </div>
       )}
 
-      {/* Senior Reading Text Size Preference */}
-      <div className="bg-white border-2 border-slate-200 p-5 sm:p-6 rounded-3xl shadow-xs space-y-4">
-        <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2 border-b border-slate-200 pb-3">
-          <Type className="w-5 h-5 text-amber-600" />
-          Text & Display Size (Senior Friendly)
-        </h3>
-        <p className="text-xs sm:text-sm text-slate-600">
-          Select font size for clear reading. Designed for 55+ parents and easy navigation.
-        </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <button
-            onClick={() => handleFontSizeChange('standard')}
-            className={`p-4 rounded-2xl border-2 font-bold text-center cursor-pointer transition-all ${
-              fontSizeMode === 'standard'
-                ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs'
-                : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="text-base font-bold">Standard Size</div>
-            <div className="text-xs opacity-80">Default compact text</div>
-          </button>
-
-          <button
-            onClick={() => handleFontSizeChange('large')}
-            className={`p-4 rounded-2xl border-2 font-bold text-center cursor-pointer transition-all ${
-              fontSizeMode === 'large'
-                ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs'
-                : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="text-lg font-extrabold">Large Text (Recommended)</div>
-            <div className="text-xs opacity-80">Clear & comfortable reading</div>
-          </button>
-
-          <button
-            onClick={() => handleFontSizeChange('extra-large')}
-            className={`p-4 rounded-2xl border-2 font-bold text-center cursor-pointer transition-all ${
-              fontSizeMode === 'extra-large'
-                ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs'
-                : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
-            }`}
-          >
-            <div className="text-xl font-extrabold">Extra Large Text</div>
-            <div className="text-xs opacity-80">Maximum legibility</div>
-          </button>
-        </div>
-      </div>
 
       {/* Currency Preferences */}
       <div className="bg-white border-2 border-slate-200 p-5 sm:p-6 rounded-3xl shadow-xs space-y-4">
@@ -196,20 +149,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </button>
           </div>
 
-          {/* Reset Sample Data */}
+          {/* Reset All Data */}
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3">
             <div className="flex items-center gap-2 text-base font-bold text-slate-900">
-              <RotateCcw className="w-5 h-5 text-purple-600" />
-              Restore Sample Demo Data
+              <RotateCcw className="w-5 h-5 text-rose-600" />
+              Clear All Data (Reset)
             </div>
             <p className="text-xs text-slate-600">
-              Reload initial sample transactions for Dubai Chewy Cookies business.
+              Remove all current transactions and start fresh with an empty list.
             </p>
             <button
               onClick={onResetSampleData}
-              className="w-full py-3 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold text-sm border border-purple-300 cursor-pointer transition-colors"
+              className="w-full py-3 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold text-sm border border-rose-300 cursor-pointer transition-colors"
             >
-              🔄 Reload Sample Data
+              🗑️ Clear All Data
             </button>
           </div>
         </div>

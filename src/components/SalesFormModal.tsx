@@ -9,6 +9,7 @@ interface SalesFormModalProps {
   onSaveSales: (sales: Omit<SalesItem, 'id' | 'createdAt'>) => void;
   currencySymbol: string;
   fontSizeMode: 'standard' | 'large' | 'extra-large';
+  initialData?: SalesItem;
 }
 
 const COOKIE_PRESETS = [
@@ -30,6 +31,7 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
   onSaveSales,
   currencySymbol,
   fontSizeMode,
+  initialData,
 }) => {
   const [date, setDate] = useState<string>(getTodayDateString());
   const [productName, setProductName] = useState<string>('');
@@ -42,16 +44,25 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setDate(getTodayDateString());
-      setProductName('');
-      setQuantity('1');
-      setTotalPrice('');
-      setPaymentMethod('Online / QR');
-      setRemarks('');
+      if (initialData) {
+        setDate(initialData.date);
+        setProductName(initialData.productName);
+        setQuantity(initialData.quantity.toString());
+        setTotalPrice(initialData.totalPrice.toString());
+        setPaymentMethod(initialData.paymentMethod);
+        setRemarks(initialData.remarks || '');
+      } else {
+        setDate(getTodayDateString());
+        setProductName('');
+        setQuantity('1');
+        setTotalPrice('');
+        setPaymentMethod('Online / QR');
+        setRemarks('');
+      }
       setErrors({});
       setShowSuccessBadge(false);
     }
-  }, [isOpen]);
+  }, [isOpen, initialData]);
 
   if (!isOpen) return null;
 
@@ -123,10 +134,10 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-white">
-                Record New Sales
+                {initialData ? 'Edit Sales' : 'Record New Sales'}
               </h2>
               <p className="text-xs sm:text-sm text-emerald-100 font-medium">
-                Cookie orders & stall income
+                {initialData ? 'Update sales details' : 'Cookie orders & stall income'}
               </p>
             </div>
           </div>
@@ -143,7 +154,7 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
         {showSuccessBadge && (
           <div className="m-4 p-4 bg-emerald-50 border-2 border-emerald-400 rounded-2xl flex items-center gap-3 text-emerald-800 font-bold text-lg animate-bounce">
             <CheckCircle2 className="w-8 h-8 text-emerald-600 shrink-0" />
-            <span>Sales Recorded Successfully!</span>
+            <span>{initialData ? 'Sales Updated Successfully!' : 'Sales Recorded Successfully!'}</span>
           </div>
         )}
 
@@ -325,7 +336,7 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
               type="submit"
               className="flex-2 py-3.5 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg shadow-md cursor-pointer active:scale-98 transition-all border border-emerald-700"
             >
-              💾 Save Sales
+              💾 {initialData ? 'Save Changes' : 'Save Sales'}
             </button>
           </div>
         </form>

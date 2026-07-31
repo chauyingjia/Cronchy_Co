@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PaymentMethod, SalesItem } from '../types';
 import { formatMoney, formatDateReadable } from '../utils/storage';
-import { PlusCircle, Search, Filter, Trash2, Calendar, AlertCircle } from 'lucide-react';
+import { PlusCircle, Search, Filter, Trash2, Calendar, AlertCircle, Edit2 } from 'lucide-react';
 
 interface SalesPageProps {
   sales: SalesItem[];
@@ -9,6 +9,7 @@ interface SalesPageProps {
   fontSizeMode: 'standard' | 'large' | 'extra-large';
   onOpenAddSales: () => void;
   onDeleteSales: (id: string) => void;
+  onEditSales: (sales: SalesItem) => void;
 }
 
 const PAYMENT_METHODS: ('All' | PaymentMethod)[] = ['All', 'Cash', 'Online / QR', 'Card'];
@@ -19,6 +20,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({
   fontSizeMode,
   onOpenAddSales,
   onDeleteSales,
+  onEditSales,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMethod, setSelectedMethod] = useState<'All' | PaymentMethod>('All');
@@ -171,13 +173,22 @@ export const SalesPage: React.FC<SalesPageProps> = ({
                   <div className="text-xl sm:text-2xl font-extrabold text-emerald-700">
                     {formatMoney(item.totalPrice, currencySymbol)}
                   </div>
-                  <button
-                    onClick={() => onDeleteSales(item.id)}
-                    className="p-2.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                    title="Delete sales"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <button
+                      onClick={() => onEditSales(item)}
+                      className="p-2.5 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                      title="Edit sales"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => onDeleteSales(item.id)}
+                      className="p-2.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                      title="Delete sales"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

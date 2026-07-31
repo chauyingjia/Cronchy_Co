@@ -1,8 +1,8 @@
 import { ExpenseItem, SalesItem, Transaction } from '../types';
 import { INITIAL_TRANSACTIONS } from '../data/initialData';
 
-const STORAGE_KEY = 'dubai_cookie_accounting_data';
-const SETTINGS_KEY = 'dubai_cookie_accounting_settings';
+const STORAGE_KEY = 'dubai_cookie_accounting_data_v2';
+const SETTINGS_KEY = 'dubai_cookie_accounting_settings_v2';
 
 export interface AppSettings {
   currencySymbol: string;
