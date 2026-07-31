@@ -12,7 +12,7 @@ interface SalesPageProps {
   onEditSales: (sales: SalesItem) => void;
 }
 
-const PAYMENT_METHODS: ('All' | PaymentMethod)[] = ['All', 'Cash', 'Online / QR', 'Card'];
+const PAYMENT_METHODS: ('All' | PaymentMethod)[] = ['All', 'Cash', 'Online / QR'];
 
 export const SalesPage: React.FC<SalesPageProps> = ({
   sales,
@@ -27,7 +27,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({
   const [dateFilter, setDateFilter] = useState<string>('');
 
   const filteredSales = sales.filter((item) => {
-    const matchesSearch = 
+    const matchesSearch =
       item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.remarks && item.remarks.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -93,7 +93,7 @@ export const SalesPage: React.FC<SalesPageProps> = ({
             {dateFilter && (
               <button
                 onClick={() => setDateFilter('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-700 hover:underline"
+                className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-700 hover:underline"
               >
                 Clear
               </button>
@@ -110,11 +110,10 @@ export const SalesPage: React.FC<SalesPageProps> = ({
             <button
               key={method}
               onClick={() => setSelectedMethod(method)}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition-all cursor-pointer ${
-                selectedMethod === method
-                  ? 'bg-emerald-500 text-slate-950 shadow-xs scale-105'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition-all cursor-pointer ${selectedMethod === method
+                ? 'bg-emerald-500 text-slate-950 shadow-xs scale-105'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
             >
               {method}
             </button>

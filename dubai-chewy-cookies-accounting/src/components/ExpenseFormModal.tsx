@@ -110,7 +110,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-950">
-                Record New Expense
+                Record New Expenses
               </h2>
             </div>
           </div>
@@ -217,8 +217,8 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
                   type="button"
                   onClick={() => setCategory(cat.label)}
                   className={`p-2.5 rounded-2xl border-2 font-bold text-xs sm:text-sm flex items-center gap-2 cursor-pointer transition-all ${category === cat.label
-                      ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs scale-[1.02]'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
+                    ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs scale-[1.02]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
                     }`}
                 >
                   <span className="text-lg">{cat.icon}</span>

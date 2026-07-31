@@ -33,6 +33,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   const [date, setDate] = useState<string>(getTodayDateString());
   const [itemName, setItemName] = useState<string>('');
   const [category, setCategory] = useState<ExpenseCategory>('Ingredients');
+  const [quantity, setQuantity] = useState<string>('');
   const [price, setPrice] = useState<string>('');
   const [remarks, setRemarks] = useState<string>('');
   const [showSuccessBadge, setShowSuccessBadge] = useState<boolean>(false);
@@ -45,12 +46,14 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         setDate(initialData.date);
         setItemName(initialData.itemName);
         setCategory(initialData.category);
+        setQuantity(initialData.quantity ? initialData.quantity.toString() : '');
         setPrice(initialData.price.toString());
         setRemarks(initialData.remarks || '');
       } else {
         setDate(getTodayDateString()); // Defaults to current real date
         setItemName('');
         setCategory('Ingredients');
+        setQuantity('');
         setPrice('');
         setRemarks('');
       }
@@ -62,9 +65,16 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
   if (!isOpen) return null;
 
   const handleSelectPreset = (preset: typeof COMMON_INGREDIENT_PRESETS[0]) => {
-    setItemName(preset.name);
-    setCategory(preset.category);
-    if (!price) {
+    if (itemName === preset.name) {
+      // Deselect
+      setItemName('');
+      setCategory('Ingredients');
+      setQuantity('');
+      setPrice('');
+    } else {
+      setItemName(preset.name);
+      setCategory(preset.category);
+      setQuantity('1');
       setPrice(preset.defaultPrice.toString());
     }
     setErrors((prev) => ({ ...prev, itemName: undefined, price: undefined }));
@@ -93,6 +103,7 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
       date: date || getTodayDateString(),
       itemName: itemName.trim(),
       category,
+      quantity: quantity ? parseFloat(quantity) : undefined,
       price: numPrice,
       remarks: remarks.trim() || undefined,
     });
@@ -122,9 +133,6 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               <h2 className="text-xl sm:text-2xl font-extrabold text-slate-950">
                 {initialData ? 'Edit Expense' : 'Record New Expense'}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-900 font-medium">
-                {initialData ? 'Update expense details' : 'Bought ingredients or stall equipment'}
-              </p>
             </div>
           </div>
           <button
@@ -153,17 +161,24 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
               1-Tap Common Ingredients (Saves Typing):
             </div>
             <div className="flex flex-wrap gap-2 pt-1">
-              {COMMON_INGREDIENT_PRESETS.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSelectPreset(preset)}
-                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-500 hover:text-slate-950 text-slate-800 text-xs sm:text-sm font-semibold border border-slate-300 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                >
-                  <Plus className="w-3.5 h-3.5 text-amber-600" />
-                  {preset.name}
-                </button>
-              ))}
+              {COMMON_INGREDIENT_PRESETS.map((preset, idx) => {
+                const isSelected = itemName === preset.name;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset)}
+                    className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border transition-colors cursor-pointer flex items-center gap-1 shadow-2xs ${
+                      isSelected
+                        ? 'bg-amber-500 text-slate-950 border-amber-600'
+                        : 'bg-white hover:bg-amber-50 text-slate-800 border-slate-300'
+                    }`}
+                  >
+                    <Plus className={`w-3.5 h-3.5 ${isSelected ? 'text-slate-950' : 'text-amber-600'}`} />
+                    {preset.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -243,38 +258,56 @@ export const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
             </div>
           </div>
 
-          {/* Price Amount */}
-          <div className="space-y-1.5">
-            <label className="flex items-center justify-between text-slate-800 font-bold text-base">
-              <span className="flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-amber-600" />
-                Total Price ({currencySymbol}) *
-              </span>
-              <span className="text-xs text-slate-500">Total amount paid</span>
-            </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-amber-700">
-                {currencySymbol}
-              </span>
+          {/* Quantity and Price Amount */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Quantity */}
+            <div className="space-y-1.5">
+              <label className="flex items-center text-slate-800 font-bold text-base">
+                Quantity
+              </label>
               <input
-                id="expense-price-input"
                 type="number"
-                step="0.01"
                 min="0"
-                placeholder="0.00"
-                value={price}
-                onChange={(e) => {
-                  setPrice(e.target.value);
-                  setErrors((prev) => ({ ...prev, price: undefined }));
-                }}
-                className={`w-full bg-slate-50 border-2 ${
-                  errors.price ? 'border-rose-500' : 'border-slate-300 focus:border-amber-500'
-                } rounded-2xl pl-14 pr-4 py-3.5 text-2xl font-bold text-amber-800 focus:outline-none`}
+                step="any"
+                placeholder="e.g. 1, 2.5"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                className={`w-full bg-slate-50 border-2 border-slate-300 focus:border-amber-500 rounded-2xl px-4 py-3.5 text-xl font-bold text-slate-900 focus:outline-none`}
               />
             </div>
-            {errors.price && (
-              <p className="text-sm font-bold text-rose-600">{errors.price}</p>
-            )}
+
+            {/* Price Amount */}
+            <div className="space-y-1.5">
+              <label className="flex items-center justify-between text-slate-800 font-bold text-base">
+                <span className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-amber-600" />
+                  Total ({currencySymbol}) *
+                </span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl font-bold text-amber-700">
+                  {currencySymbol}
+                </span>
+                <input
+                  id="expense-price-input"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={price}
+                  onChange={(e) => {
+                    setPrice(e.target.value);
+                    setErrors((prev) => ({ ...prev, price: undefined }));
+                  }}
+                  className={`w-full bg-slate-50 border-2 ${
+                    errors.price ? 'border-rose-500' : 'border-slate-300 focus:border-amber-500'
+                  } rounded-2xl pl-14 pr-4 py-3.5 text-xl font-bold text-amber-800 focus:outline-none`}
+                />
+              </div>
+              {errors.price && (
+                <p className="text-sm font-bold text-rose-600">{errors.price}</p>
+              )}
+            </div>
           </div>
 
           {/* Remarks (Optional) */}

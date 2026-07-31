@@ -35,7 +35,7 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
   const [dateFilter, setDateFilter] = useState<string>(''); // YYYY-MM or exact date
 
   const filteredExpenses = expenses.filter((exp) => {
-    const matchesSearch = 
+    const matchesSearch =
       exp.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (exp.remarks && exp.remarks.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -54,13 +54,13 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
       <div className="bg-white border-2 border-amber-300 p-5 sm:p-6 rounded-3xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-amber-700 font-bold text-sm tracking-wide uppercase mb-1">
-            <span>💸 Expense Tracker (Money Out)</span>
+            <span>💸 Expenses Tracker</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-            Ingredients & Supplies Purchases
+            My Expenses
           </h2>
           <p className="text-slate-600 text-sm mt-1">
-            View, search, and manage all your business expenses.
+            View, search and manage my expenses.
           </p>
         </div>
 
@@ -101,7 +101,7 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
             {dateFilter && (
               <button
                 onClick={() => setDateFilter('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-700 hover:underline"
+                className="absolute right-12 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-700 hover:underline"
               >
                 Clear
               </button>
@@ -118,11 +118,10 @@ export const ExpensesPage: React.FC<ExpensesPageProps> = ({
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition-all cursor-pointer ${
-                selectedCategory === cat
-                  ? 'bg-amber-500 text-slate-950 shadow-xs scale-105'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
+              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold shrink-0 transition-all cursor-pointer ${selectedCategory === cat
+                ? 'bg-amber-500 text-slate-950 shadow-xs scale-105'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                }`}
             >
               {cat}
             </button>

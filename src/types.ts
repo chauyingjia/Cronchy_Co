@@ -8,7 +8,7 @@ export type ExpenseCategory =
   | 'Transport' 
   | 'Others';
 
-export type PaymentMethod = 'Cash' | 'Online / QR' | 'Card';
+export type PaymentMethod = 'Cash' | 'Online / QR';
 
 export interface ExpenseItem {
   id: string;
@@ -16,6 +16,7 @@ export interface ExpenseItem {
   date: string; // YYYY-MM-DD
   itemName: string;
   category: ExpenseCategory;
+  quantity?: number;
   price: number;
   remarks?: string;
   createdAt: number;

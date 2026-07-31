@@ -33,7 +33,11 @@ import { SettingsPage } from './components/SettingsPage';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<ViewTab>('dashboard');
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [expensesList, setExpensesList] = useState<ExpenseItem[]>([]);
+  const [salesList, setSalesList] = useState<SalesItem[]>([]);
+  
+  const transactions: Transaction[] = [...expensesList, ...salesList].sort((a, b) => b.createdAt - a.createdAt);
+  
   const [settings, setSettings] = useState<AppSettings>(loadSettings());
   const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
   const [isAddSalesModalOpen, setIsAddSalesModalOpen] = useState(false);
@@ -41,20 +45,34 @@ export default function App() {
   const [editingExpense, setEditingExpense] = useState<ExpenseItem | undefined>(undefined);
   const [editingSales, setEditingSales] = useState<SalesItem | undefined>(undefined);
 
-  // Initialize transactions from Firestore
+  // Initialize transactions from Firestore collections
   useEffect(() => {
-    const q = query(collection(db, 'transactions'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const txs: Transaction[] = [];
+    const qExpenses = query(collection(db, 'expenses'), orderBy('createdAt', 'desc'));
+    const unsubscribeExpenses = onSnapshot(qExpenses, (querySnapshot) => {
+      const exps: ExpenseItem[] = [];
       querySnapshot.forEach((document) => {
-        txs.push({ id: document.id, ...document.data() } as Transaction);
+        exps.push({ id: document.id, ...document.data() } as ExpenseItem);
       });
-      setTransactions(txs);
+      setExpensesList(exps);
     }, (error) => {
-      console.error("Error fetching transactions: ", error);
+      console.error("Error fetching expenses: ", error);
     });
 
-    return () => unsubscribe();
+    const qSales = query(collection(db, 'sales'), orderBy('createdAt', 'desc'));
+    const unsubscribeSales = onSnapshot(qSales, (querySnapshot) => {
+      const sls: SalesItem[] = [];
+      querySnapshot.forEach((document) => {
+        sls.push({ id: document.id, ...document.data() } as SalesItem);
+      });
+      setSalesList(sls);
+    }, (error) => {
+      console.error("Error fetching sales: ", error);
+    });
+
+    return () => {
+      unsubscribeExpenses();
+      unsubscribeSales();
+    };
   }, []);
 
   const handleUpdateSettings = (newSettings: AppSettings) => {
@@ -66,14 +84,14 @@ export default function App() {
   const handleSaveExpense = async (expenseData: Omit<ExpenseItem, 'id' | 'createdAt'>) => {
     try {
       if (editingExpense) {
-        await setDoc(doc(db, 'transactions', editingExpense.id), {
+        await setDoc(doc(db, 'expenses', editingExpense.id), {
           ...expenseData,
           createdAt: editingExpense.createdAt,
           type: 'expense'
         });
         setEditingExpense(undefined);
       } else {
-        await addDoc(collection(db, 'transactions'), {
+        await addDoc(collection(db, 'expenses'), {
           ...expenseData,
           createdAt: Date.now(),
           type: 'expense'
@@ -93,14 +111,14 @@ export default function App() {
   const handleSaveSales = async (salesData: Omit<SalesItem, 'id' | 'createdAt'>) => {
     try {
       if (editingSales) {
-        await setDoc(doc(db, 'transactions', editingSales.id), {
+        await setDoc(doc(db, 'sales', editingSales.id), {
           ...salesData,
           createdAt: editingSales.createdAt,
           type: 'sales'
         });
         setEditingSales(undefined);
       } else {
-        await addDoc(collection(db, 'transactions'), {
+        await addDoc(collection(db, 'sales'), {
           ...salesData,
           createdAt: Date.now(),
           type: 'sales'
@@ -117,10 +135,11 @@ export default function App() {
   };
 
   // Delete Transaction
-  const handleDeleteTransaction = async (id: string) => {
+  const handleDeleteTransaction = async (id: string, type: 'expense' | 'sales' | string = 'expense') => {
     if (window.confirm('Are you sure you want to delete this entry?')) {
       try {
-        await deleteDoc(doc(db, 'transactions', id));
+        const collectionName = type === 'sales' ? 'sales' : 'expenses';
+        await deleteDoc(doc(db, collectionName, id));
       } catch (e) {
         console.error("Error deleting transaction: ", e);
       }
@@ -134,14 +153,18 @@ export default function App() {
         const batch = writeBatch(db);
         
         // Wipe existing
-        transactions.forEach((t) => {
-          batch.delete(doc(db, 'transactions', t.id));
+        expensesList.forEach((t) => {
+          batch.delete(doc(db, 'expenses', t.id));
+        });
+        salesList.forEach((t) => {
+          batch.delete(doc(db, 'sales', t.id));
         });
         
         // Add samples
         INITIAL_TRANSACTIONS.forEach((t) => {
           const { id, ...data } = t;
-          const newDocRef = doc(collection(db, 'transactions'));
+          const collectionName = t.type === 'sales' ? 'sales' : 'expenses';
+          const newDocRef = doc(collection(db, collectionName));
           batch.set(newDocRef, data);
         });
         
@@ -170,10 +193,10 @@ export default function App() {
       if (Array.isArray(parsed)) {
         const batch = writeBatch(db);
         parsed.forEach((t) => {
-          const { id, ...data } = t;
-          // Use provided ID if available, otherwise generate one
-          const newDocRef = id ? doc(db, 'transactions', id) : doc(collection(db, 'transactions'));
-          batch.set(newDocRef, data);
+          const { id, type, ...data } = t;
+          const collectionName = type === 'sales' ? 'sales' : 'expenses';
+          const newDocRef = id ? doc(db, collectionName, id) : doc(collection(db, collectionName));
+          batch.set(newDocRef, { type, ...data });
         });
         await batch.commit();
         return true;
@@ -227,7 +250,10 @@ export default function App() {
               onOpenAddExpense={() => setIsAddExpenseModalOpen(true)}
               onOpenAddSales={() => setIsAddSalesModalOpen(true)}
               onSelectTab={setCurrentTab}
-              onDeleteTransaction={handleDeleteTransaction}
+              onDeleteTransaction={(id) => {
+                const item = transactions.find(t => t.id === id);
+                if (item) handleDeleteTransaction(id, item.type);
+              }}
               onEditExpense={handleEditExpense}
               onEditSales={handleEditSales}
             />
@@ -239,7 +265,7 @@ export default function App() {
               currencySymbol={settings.currencySymbol}
               fontSizeMode={settings.fontSizeMode}
               onOpenAddExpense={() => setIsAddExpenseModalOpen(true)}
-              onDeleteExpense={handleDeleteTransaction}
+              onDeleteExpense={(id) => handleDeleteTransaction(id, 'expense')}
               onEditExpense={handleEditExpense}
             />
           )}
@@ -250,7 +276,7 @@ export default function App() {
               currencySymbol={settings.currencySymbol}
               fontSizeMode={settings.fontSizeMode}
               onOpenAddSales={() => setIsAddSalesModalOpen(true)}
-              onDeleteSales={handleDeleteTransaction}
+              onDeleteSales={(id) => handleDeleteTransaction(id, 'sales')}
               onEditSales={handleEditSales}
             />
           )}

@@ -13,16 +13,13 @@ interface SalesFormModalProps {
 }
 
 const COOKIE_PRESETS = [
-  { name: 'Pistachio Kunafa Box (4-Pack)', unitPrice: 35.00 },
-  { name: 'Single Dubai Chewy Cookie', unitPrice: 11.00 },
-  { name: 'Assorted Dubai Party Tray', unitPrice: 120.00 },
-  { name: 'Stall Walk-in Day Batch', unitPrice: 200.00 },
+  { name: 'Chocolate Dubai Chewy Cookie', unitPrice: 11.00 },
+  { name: 'Pistachio Dubai Chewy Cookie', unitPrice: 12.00 },
 ];
 
 const PAYMENT_METHODS: { method: PaymentMethod; icon: string }[] = [
   { method: 'Cash', icon: '💵' },
   { method: 'Online / QR', icon: '📱' },
-  { method: 'Card', icon: '💳' },
 ];
 
 export const SalesFormModal: React.FC<SalesFormModalProps> = ({
@@ -67,9 +64,16 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
   if (!isOpen) return null;
 
   const handleSelectPreset = (preset: typeof COOKIE_PRESETS[0]) => {
-    setProductName(preset.name);
-    const qty = parseInt(quantity) || 1;
-    setTotalPrice((preset.unitPrice * qty).toFixed(2));
+    if (productName === preset.name) {
+      // Deselect
+      setProductName('');
+      setQuantity('');
+      setTotalPrice('');
+    } else {
+      setProductName(preset.name);
+      setQuantity('1');
+      setTotalPrice(preset.unitPrice.toString());
+    }
     setErrors((prev) => ({ ...prev, productName: undefined, totalPrice: undefined }));
   };
 
@@ -122,7 +126,7 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div 
+      <div
         id="sales-modal-container"
         className="w-full max-w-lg bg-white border-2 border-slate-200 rounded-3xl shadow-xl text-slate-900 overflow-hidden my-auto"
       >
@@ -136,9 +140,6 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
               <h2 className="text-xl sm:text-2xl font-extrabold text-white">
                 {initialData ? 'Edit Sales' : 'Record New Sales'}
               </h2>
-              <p className="text-xs sm:text-sm text-emerald-100 font-medium">
-                {initialData ? 'Update sales details' : 'Cookie orders & stall income'}
-              </p>
             </div>
           </div>
           <button
@@ -167,17 +168,24 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
               1-Tap Common Cookie Items:
             </div>
             <div className="flex flex-wrap gap-2 pt-1">
-              {COOKIE_PRESETS.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleSelectPreset(preset)}
-                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-emerald-600 hover:text-white text-slate-800 text-xs sm:text-sm font-semibold border border-slate-300 transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
-                >
-                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
-                  {preset.name}
-                </button>
-              ))}
+              {COOKIE_PRESETS.map((preset, idx) => {
+                const isSelected = productName === preset.name;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectPreset(preset)}
+                    className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border transition-colors cursor-pointer flex items-center gap-1 shadow-2xs ${
+                      isSelected
+                        ? 'bg-emerald-500 text-white border-emerald-600'
+                        : 'bg-white hover:bg-emerald-50 text-emerald-800 border-emerald-300'
+                    }`}
+                  >
+                    <Plus className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-emerald-600'}`} />
+                    {preset.name}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -225,9 +233,8 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
                 setProductName(e.target.value);
                 setErrors((prev) => ({ ...prev, productName: undefined }));
               }}
-              className={`w-full bg-slate-50 border-2 ${
-                errors.productName ? 'border-rose-500' : 'border-slate-300 focus:border-emerald-500'
-              } rounded-2xl px-4 ${inputSizeClass} text-slate-900 placeholder-slate-400 focus:outline-none`}
+              className={`w-full bg-slate-50 border-2 ${errors.productName ? 'border-rose-500' : 'border-slate-300 focus:border-emerald-500'
+                } rounded-2xl px-4 ${inputSizeClass} text-slate-900 placeholder-slate-400 focus:outline-none`}
             />
             {errors.productName && (
               <p className="text-sm font-bold text-rose-600">{errors.productName}</p>
@@ -271,9 +278,8 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
                     setTotalPrice(e.target.value);
                     setErrors((prev) => ({ ...prev, totalPrice: undefined }));
                   }}
-                  className={`w-full bg-slate-50 border-2 ${
-                    errors.totalPrice ? 'border-rose-500' : 'border-slate-300 focus:border-emerald-500'
-                  } rounded-2xl pl-12 pr-3 py-3 text-xl font-bold text-emerald-800 focus:outline-none`}
+                  className={`w-full bg-slate-50 border-2 ${errors.totalPrice ? 'border-rose-500' : 'border-slate-300 focus:border-emerald-500'
+                    } rounded-2xl pl-12 pr-3 py-3 text-xl font-bold text-emerald-800 focus:outline-none`}
                 />
               </div>
               {errors.totalPrice && (
@@ -288,17 +294,16 @@ export const SalesFormModal: React.FC<SalesFormModalProps> = ({
               <CreditCard className="w-5 h-5 text-emerald-600" />
               Payment Method
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {PAYMENT_METHODS.map((pm) => (
                 <button
                   key={pm.method}
                   type="button"
                   onClick={() => setPaymentMethod(pm.method)}
-                  className={`p-2.5 rounded-2xl border-2 font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer transition-all ${
-                    paymentMethod === pm.method
-                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs scale-[1.02]'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
-                  }`}
+                  className={`p-2.5 rounded-2xl border-2 font-bold text-xs sm:text-sm flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer transition-all ${paymentMethod === pm.method
+                    ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs scale-[1.02]'
+                    : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300'
+                    }`}
                 >
                   <span className="text-lg">{pm.icon}</span>
                   <span className="truncate">{pm.method}</span>
