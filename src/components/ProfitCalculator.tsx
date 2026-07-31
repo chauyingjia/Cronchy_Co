@@ -1,83 +1,134 @@
-import React, { useState } from 'react';
-import { Transaction } from '../types';
+import React, { useState, useEffect } from 'react';
+import { doc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { formatMoney } from '../utils/storage';
-import { Calculator, DollarSign, Sparkles, RefreshCw, Layers, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Calculator, Layers, ChevronDown, ChevronRight, Package } from 'lucide-react';
 
 interface ProfitCalculatorProps {
-  transactions: Transaction[];
   currencySymbol: string;
-  fontSizeMode: 'standard' | 'large' | 'extra-large';
 }
 
 export const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
-  transactions,
   currencySymbol,
-  fontSizeMode,
 }) => {
-  // 1. Overall Business Profit Calculator State
-  const [salesInput, setSalesInput] = useState<string>('');
-  const [expenseInput, setExpenseInput] = useState<string>('');
+  // --- RECIPE COST STATE ---
+  const [batches, setBatches] = useState<string>('1');
 
-  // 2. Cookie Recipe Unit Economics Calculator State (Preset with default realistic values for Dubai Chewy Cookies)
-  const [pistachioCost, setPistachioCost] = useState<string>('28.00');
-  const [kataifiCost, setKataifiCost] = useState<string>('12.00');
-  const [chocolateCost, setChocolateCost] = useState<string>('18.00');
-  const [butterFlourCost, setButterFlourCost] = useState<string>('10.00');
-  const [packagingBoxCost, setPackagingBoxCost] = useState<string>('8.00');
-  const [batchYield, setBatchYield] = useState<string>('20'); // 20 cookies per batch
-  const [sellingPricePerCookie, setSellingPricePerCookie] = useState<string>('11.00');
-  const [stallRentalPerDay, setStallRentalPerDay] = useState<string>('80.00');
+  const [draftBulk, setDraftBulk] = useState({
+    roastedPistachio: { name: 'Roasted Powder Pistachio (开心果粉)', price: '65.00', grams: '500' },
+    pistachioPaste: { name: 'Pistachio Paste (开心果酱)', price: '40.82', grams: '1000' },
+    chocolatePaste: { name: 'BWY Nuturra Hazelnut (巧克力酱)', price: '28.19', grams: '1000' },
+    kataifi: { name: 'Original Kunafa Dough (面包丝/酥丝面)', price: '11.20', grams: '500' },
+    marshmallow: { name: 'Marshmallow (棉花糖)', price: '19.80', grams: '1000' },
+    milkPowder: { name: 'Milk Powder (奶粉)', price: '10.00', grams: '500' },
+    cocoaPowder: { name: 'Cocoa Powder (可可粉)', price: '6.90', grams: '250' },
+    butter: { name: 'Butter (牛油)', price: '9.90', grams: '250' },
+    others: { name: 'Others (其他)', price: '0.00', grams: '1' }
+  });
+  const [bulk, setBulk] = useState(draftBulk);
 
-  // Load totals from actual recorded database
-  const loadRecordedTotals = (period: 'today' | 'month' | 'all') => {
-    const todayStr = new Date().toISOString().split('T')[0];
-    const monthStr = todayStr.substring(0, 7);
+  const [draftPackaging, setDraftPackaging] = useState({
+    box: { name: 'Box', price: '1.00', qty: '1' },
+    plasticBag: { name: 'Plastic Bags', price: '0.10', qty: '1' },
+    bakingPaper: { name: 'Baking Paper', price: '0.50', qty: '1' },
+    sticker: { name: 'Stickers', price: '0.20', qty: '1' },
+    others: { name: 'Others (其他)', price: '0.00', qty: '1' }
+  });
+  const [packaging, setPackaging] = useState(draftPackaging);
 
-    let filtered = transactions;
-    if (period === 'today') {
-      filtered = transactions.filter((t) => t.date === todayStr);
-    } else if (period === 'month') {
-      filtered = transactions.filter((t) => t.date.startsWith(monthStr));
-    }
-
-    const s = filtered
-      .filter((t) => t.type === 'sales')
-      .reduce((sum, t) => sum + (t as any).totalPrice, 0);
-
-    const e = filtered
-      .filter((t) => t.type === 'expense')
-      .reduce((sum, t) => sum + (t as any).price, 0);
-
-    setSalesInput(s.toFixed(2));
-    setExpenseInput(e.toFixed(2));
+  const updateBulk = (key: keyof typeof draftBulk, field: 'price' | 'grams', val: string) => {
+    setDraftBulk(prev => ({ ...prev, [key]: { ...prev[key], [field]: val } }));
+  };
+  const updatePack = (key: keyof typeof draftPackaging, field: 'price' | 'qty', val: string) => {
+    setDraftPackaging(prev => ({ ...prev, [key]: { ...prev[key], [field]: val } }));
   };
 
-  // Section 1 Calculations
-  const salesVal = parseFloat(salesInput) || 0;
-  const expenseVal = parseFloat(expenseInput) || 0;
-  const netProfitVal = salesVal - expenseVal;
-  const profitMarginPercent = salesVal > 0 ? (netProfitVal / salesVal) * 100 : 0;
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, 'calculator', 'pricing'), (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.bulk) {
+          setDraftBulk(data.bulk);
+          setBulk(data.bulk);
+        }
+        if (data.packaging) {
+          setDraftPackaging(data.packaging);
+          setPackaging(data.packaging);
+        }
+      }
+    });
+    return () => unsub();
+  }, []);
 
-  // Section 2 Cookie Batch Unit Calculations
-  const pCost = parseFloat(pistachioCost) || 0;
-  const kCost = parseFloat(kataifiCost) || 0;
-  const cCost = parseFloat(chocolateCost) || 0;
-  const bfCost = parseFloat(butterFlourCost) || 0;
-  const boxCost = parseFloat(packagingBoxCost) || 0;
-  const qtyYield = parseInt(batchYield) || 1;
-  const pricePerCookie = parseFloat(sellingPricePerCookie) || 0;
-  const stallRental = parseFloat(stallRentalPerDay) || 0;
+  const handleCalculate = async () => {
+    setBulk(draftBulk);
+    setPackaging(draftPackaging);
+    
+    try {
+      await setDoc(doc(db, 'calculator', 'pricing'), {
+        bulk: draftBulk,
+        packaging: draftPackaging
+      });
+    } catch (e) {
+      console.error("Error saving calculator pricing: ", e);
+    }
+  };
 
-  const totalBatchCost = pCost + kCost + cCost + bfCost + boxCost;
-  const costPerCookie = totalBatchCost / qtyYield;
-  const profitPerCookie = pricePerCookie - costPerCookie;
-  const cookieMarginPercent = pricePerCookie > 0 ? (profitPerCookie / pricePerCookie) * 100 : 0;
-  
-  // Break-even cookies needed to cover stall rental
-  const breakEvenCookies = profitPerCookie > 0 ? Math.ceil(stallRental / profitPerCookie) : 0;
+  const getUnitCost = (item?: { price: string, grams?: string, qty?: string }) => {
+    if (!item) return 0;
+    const p = parseFloat(item.price) || 0;
+    const q = parseFloat(item.grams || item.qty || '1') || 1;
+    return p / q;
+  };
+
+  const batchMultiplier = parseFloat(batches) || 1;
+  const cookiesPerBatch = 6 * batchMultiplier;
+
+  // Recipe: Pistachio (for 6 cookies)
+  const pistRecipe = {
+    kataifi: 75, butter: 45, pistachioPaste: 72.5, roastedPistachio: 72.5,
+    marshmallow: 100, cocoaPowder: 10, milkPowder: 15
+  };
+  let pistIngCost = 0;
+  pistIngCost += getUnitCost((bulk as any).kataifi) * pistRecipe.kataifi;
+  pistIngCost += getUnitCost((bulk as any).butter) * pistRecipe.butter;
+  pistIngCost += getUnitCost((bulk as any).pistachioPaste) * pistRecipe.pistachioPaste;
+  pistIngCost += getUnitCost((bulk as any).roastedPistachio) * pistRecipe.roastedPistachio;
+  pistIngCost += getUnitCost((bulk as any).marshmallow) * pistRecipe.marshmallow;
+  pistIngCost += getUnitCost((bulk as any).cocoaPowder) * pistRecipe.cocoaPowder;
+  pistIngCost += getUnitCost((bulk as any).milkPowder) * pistRecipe.milkPowder;
+  pistIngCost *= batchMultiplier;
+
+  // Recipe: Chocolate (for 6 cookies)
+  const chocRecipe = {
+    kataifi: 75, butter: 45, chocolatePaste: 66.5, cocoaPowder: 16,
+    marshmallow: 100, milkPowder: 15
+  };
+  let chocIngCost = 0;
+  chocIngCost += getUnitCost((bulk as any).kataifi) * chocRecipe.kataifi;
+  chocIngCost += getUnitCost((bulk as any).butter) * chocRecipe.butter;
+  chocIngCost += getUnitCost((bulk as any).chocolatePaste) * chocRecipe.chocolatePaste;
+  chocIngCost += getUnitCost((bulk as any).cocoaPowder) * chocRecipe.cocoaPowder;
+  chocIngCost += getUnitCost((bulk as any).marshmallow) * chocRecipe.marshmallow;
+  chocIngCost += getUnitCost((bulk as any).milkPowder) * chocRecipe.milkPowder;
+  chocIngCost *= batchMultiplier;
+
+  // Packaging cost (per cookie = 1 serve)
+  const packCostPerCookie = getUnitCost(packaging.box) + getUnitCost(packaging.plasticBag) + getUnitCost(packaging.bakingPaper) + getUnitCost(packaging.sticker);
+  const totalPackCost = packCostPerCookie * cookiesPerBatch;
+
+  const pistTotalCost = pistIngCost + totalPackCost;
+  const chocTotalCost = chocIngCost + totalPackCost;
+
+  const pistSales = 12.00 * cookiesPerBatch;
+  const chocSales = 11.00 * cookiesPerBatch;
+
+  const inputClass = "w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-3 py-2 text-slate-900 font-bold focus:border-purple-500 focus:outline-none transition-colors";
+
+  const [showIngredients, setShowIngredients] = useState(true);
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="space-y-8 pb-8 max-w-5xl mx-auto">
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-purple-900 via-stone-900 to-purple-950 p-5 sm:p-6 rounded-3xl border-2 border-purple-500/40 shadow-lg text-white">
         <div className="flex items-center gap-2 text-purple-300 font-bold text-sm tracking-wide uppercase mb-1">
@@ -85,301 +136,131 @@ export const ProfitCalculator: React.FC<ProfitCalculatorProps> = ({
           <span>Smart Profit Tools</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-          Profit & Recipe Cost Calculators
+          Recipe & Batch Calculator
         </h2>
         <p className="text-stone-200 text-sm sm:text-base mt-1">
-          Calculate overall profits (Sales - Expenses) and estimate your Dubai cookie recipe production costs.
+          Calculate precise recipe costs for your Dubai cookies.
         </p>
       </div>
 
-      {/* SECTION 1: Overall Sales - Expenses Profit Calculator */}
+      {/* RECIPE BATCH COST */}
       <div className="bg-white border-2 border-slate-200 p-5 sm:p-6 rounded-3xl shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
-          <div>
-            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <DollarSign className="w-6 h-6 text-purple-600" />
-              1. Overall Business Profit Calculator
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Formula: Net Profit = Total Sales - Total Expenses
-            </p>
-          </div>
-
-          {/* Quick Load Buttons from Database */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-slate-500 font-bold">Auto-Load:</span>
-            <button
-              id="load-today-profit-btn"
-              onClick={() => loadRecordedTotals('today')}
-              className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold text-xs border border-purple-200 cursor-pointer transition-colors"
-            >
-              Today's Data
-            </button>
-            <button
-              id="load-month-profit-btn"
-              onClick={() => loadRecordedTotals('month')}
-              className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold text-xs border border-purple-200 cursor-pointer transition-colors"
-            >
-              This Month
-            </button>
-            <button
-              id="load-all-profit-btn"
-              onClick={() => loadRecordedTotals('all')}
-              className="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold text-xs border border-purple-200 cursor-pointer transition-colors"
-            >
-              All Time
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Inputs */}
-          <div className="space-y-4">
-            {/* Sales Input */}
-            <div className="space-y-1.5">
-              <label className="text-emerald-800 font-bold text-base block">
-                Total Sales Revenue ({currencySymbol})
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-emerald-700">
-                  {currencySymbol}
-                </span>
-                <input
-                  id="calc-sales-input"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={salesInput}
-                  onChange={(e) => setSalesInput(e.target.value)}
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-2xl pl-12 pr-4 py-3.5 text-2xl font-bold text-emerald-700 focus:outline-none"
-                />
-              </div>
-            </div>
-
-            {/* Expenses Input */}
-            <div className="space-y-1.5">
-              <label className="text-amber-800 font-bold text-base block">
-                Total Expenses / Costs ({currencySymbol})
-              </label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-amber-700">
-                  {currencySymbol}
-                </span>
-                <input
-                  id="calc-expense-input"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={expenseInput}
-                  onChange={(e) => setExpenseInput(e.target.value)}
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-2xl pl-12 pr-4 py-3.5 text-2xl font-bold text-amber-700 focus:outline-none"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Results Box */}
-          <div className="bg-slate-50 border-2 border-slate-200 p-5 rounded-3xl flex flex-col justify-between space-y-4">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Calculated Net Profit
-              </span>
-              <div className={`text-3xl sm:text-4xl font-extrabold ${
-                netProfitVal >= 0 ? 'text-emerald-700' : 'text-rose-600'
-              }`}>
-                {formatMoney(netProfitVal, currencySymbol)}
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-sm sm:text-base">
-              <span className="text-slate-700 font-bold">Profit Margin:</span>
-              <span className={`font-extrabold px-3 py-1 rounded-xl text-lg ${
-                profitMarginPercent >= 0 ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'
-              }`}>
-                {profitMarginPercent.toFixed(1)}%
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION 2: Dubai Chewy Cookie Recipe Unit Economics Calculator */}
-      <div className="bg-white border-2 border-amber-300 p-5 sm:p-6 rounded-3xl shadow-xs space-y-6">
         <div className="border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-2 text-amber-700 font-bold text-xs uppercase tracking-wider mb-1">
-            <Sparkles className="w-4 h-4 text-amber-600" />
-            <span>Tailored for Dubai Chewy Cookies</span>
-          </div>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 flex items-center gap-2">
-            🍪 2. Cookie Batch Cost & Unit Economics Estimator
+          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <Layers className="w-6 h-6 text-amber-500" />
+            Dubai Chewy Cookie Recipe Cost
           </h3>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1">
-            Input ingredient costs for a single baking batch to discover cost per cookie and break-even points!
-          </p>
+          <p className="text-slate-500 text-sm mt-1">Calculate precise batch costs using your exact recipe ingredients.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Ingredient Cost Inputs */}
-          <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700 block">
-                1. Pistachio Cream Paste ({currencySymbol})
-              </label>
-              <input
-                type="number"
-                step="0.10"
-                value={pistachioCost}
-                onChange={(e) => setPistachioCost(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
+        {/* Bulk Pricing Inputs (Toggleable) */}
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden">
+          <button
+            onClick={() => setShowIngredients(!showIngredients)}
+            className="w-full px-5 py-4 flex items-center justify-between bg-white hover:bg-slate-50 transition-colors font-bold text-slate-800"
+          >
+            <div className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-amber-600" />
+              Bulk Ingredient & Packaging Prices
             </div>
+            {showIngredients ? <ChevronDown className="w-5 h-5 text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-400" />}
+          </button>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700 block">
-                2. Kataifi / Kunafa Dough ({currencySymbol})
-              </label>
-              <input
-                type="number"
-                step="0.10"
-                value={kataifiCost}
-                onChange={(e) => setKataifiCost(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
+          {showIngredients && (
+            <div className="p-5 border-t border-slate-200 space-y-6">
+              <div>
+                <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-3">Ingredients (Price per Grams)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(Object.keys(draftBulk) as Array<keyof typeof draftBulk>).map((key) => (
+                    <div key={key} className="flex items-center justify-between gap-2 p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                      <span className="text-xs font-semibold text-slate-700 truncate w-1/2">{draftBulk[key].name}</span>
+                      <div className="flex items-center gap-1 w-1/2 justify-end">
+                        <span className="text-xs text-slate-400">{currencySymbol}</span>
+                        <input type="number" value={draftBulk[key].price} onChange={(e) => updateBulk(key, 'price', e.target.value)} className={"w-16 text-xs px-2 py-1.5 " + inputClass} />
+                        <span className="text-xs text-slate-400">per</span>
+                        <input type="number" value={draftBulk[key].grams} onChange={(e) => updateBulk(key, 'grams', e.target.value)} className={"w-16 text-xs px-2 py-1.5 " + inputClass} />
+                        <span className="text-xs text-slate-400">g</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-sm text-slate-500 uppercase tracking-wider mb-3">Packaging (Price per Qty)</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(Object.keys(draftPackaging) as Array<keyof typeof draftPackaging>).map((key) => (
+                    <div key={key} className="flex items-center justify-between gap-2 p-2 rounded-xl hover:bg-slate-100 transition-colors">
+                      <span className="text-xs font-semibold text-slate-700 truncate w-1/2">{draftPackaging[key].name}</span>
+                      <div className="flex items-center gap-1 w-1/2 justify-end">
+                        <span className="text-xs text-slate-400">{currencySymbol}</span>
+                        <input type="number" value={draftPackaging[key].price} onChange={(e) => updatePack(key, 'price', e.target.value)} className={"w-16 text-xs px-2 py-1.5 " + inputClass} />
+                        <span className="text-xs text-slate-400">per</span>
+                        <input type="number" value={draftPackaging[key].qty} onChange={(e) => updatePack(key, 'qty', e.target.value)} className={"w-16 text-xs px-2 py-1.5 " + inputClass} />
+                        <span className="text-xs text-slate-400">pcs</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200 flex justify-center">
+                <button
+                  onClick={handleCalculate}
+                  className="bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-extrabold px-10 py-3.5 rounded-2xl shadow-md transition-all flex items-center gap-2 text-lg active:scale-95 border border-amber-300"
+                >
+                  <Calculator className="w-6 h-6" />
+                  Calculate Batch Cost
+                </button>
+              </div>
             </div>
+          )}
+        </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700 block">
-                3. Chocolate Shell / Coating ({currencySymbol})
-              </label>
-              <input
-                type="number"
-                step="0.10"
-                value={chocolateCost}
-                onChange={(e) => setChocolateCost(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700 block">
-                4. Butter, Flour & Sugar ({currencySymbol})
-              </label>
-              <input
-                type="number"
-                step="0.10"
-                value={butterFlourCost}
-                onChange={(e) => setButterFlourCost(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-slate-700 block">
-                5. Packaging Boxes & Foil ({currencySymbol})
-              </label>
-              <input
-                type="number"
-                step="0.10"
-                value={packagingBoxCost}
-                onChange={(e) => setPackagingBoxCost(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-amber-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-emerald-800 block">
-                6. Cookies Produced Per Batch (Yield)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={batchYield}
-                onChange={(e) => setBatchYield(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-emerald-800 block">
-                7. Selling Price Per Cookie ({currencySymbol})
-              </label>
-              <input
-                type="number"
-                step="0.50"
-                value={sellingPricePerCookie}
-                onChange={(e) => setSellingPricePerCookie(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-emerald-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-purple-800 block">
-                8. Daily Stall Rental Fee ({currencySymbol})
-              </label>
-              <input
-                type="number"
-                step="5.00"
-                value={stallRentalPerDay}
-                onChange={(e) => setStallRentalPerDay(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-purple-500 rounded-xl px-3 py-2 text-base text-slate-900 font-bold focus:outline-none"
-              />
+        {/* Recipe Calculator Results */}
+        <div className="pt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h4 className="font-extrabold text-slate-900 text-lg">Batch Calculator</h4>
+            <div className="flex items-center gap-3 bg-amber-100 p-2 px-4 rounded-2xl border border-amber-300">
+              <span className="font-bold text-sm text-amber-800">Batches to make:</span>
+              <input type="number" value={batches} onChange={(e) => setBatches(e.target.value)} className="w-16 text-center font-black text-lg bg-white rounded-xl px-2 py-1 border-2 border-amber-400 focus:outline-none" min="1" />
+              <span className="text-xs font-semibold text-amber-700">({cookiesPerBatch} cookies)</span>
             </div>
           </div>
 
-          {/* Unit Economics Results Summary Panel */}
-          <div className="bg-amber-50/60 border-2 border-amber-200 p-5 rounded-3xl flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <span className="text-xs font-extrabold text-amber-800 uppercase tracking-wider block border-b border-amber-200 pb-2">
-                Batch Analysis Results
-              </span>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-600 font-medium">Total Batch Cost:</span>
-                <span className="text-base font-bold text-amber-900">
-                  {formatMoney(totalBatchCost, currencySymbol)}
-                </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Pistachio Recipe Card */}
+            <div className="bg-white border-2 border-emerald-200 rounded-3xl p-5 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">Pistachio</div>
+              <h5 className="font-extrabold text-emerald-800 mb-4 text-lg">Pistachio Dubai Chewy</h5>
+              <div className="space-y-2 mb-4 text-sm">
+                <div className="flex justify-between text-slate-600"><span>Ingredients Cost:</span> <span>{formatMoney(pistIngCost, currencySymbol)}</span></div>
+                <div className="flex justify-between text-slate-600"><span>Packaging Cost:</span> <span>{formatMoney(totalPackCost, currencySymbol)}</span></div>
+                <div className="flex justify-between font-bold text-slate-800 border-t border-emerald-100 pt-2"><span>Total Batch Cost:</span> <span>{formatMoney(pistTotalCost, currencySymbol)}</span></div>
+                <div className="flex justify-between font-bold text-emerald-700"><span>Cost per Cookie:</span> <span>{formatMoney(pistTotalCost / cookiesPerBatch, currencySymbol)}</span></div>
               </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-600 font-medium">Cost Per Cookie:</span>
-                <span className="text-base font-bold text-amber-800">
-                  {formatMoney(costPerCookie, currencySymbol)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-600 font-medium">Selling Price:</span>
-                <span className="text-base font-bold text-emerald-700">
-                  {formatMoney(pricePerCookie, currencySymbol)}
-                </span>
-              </div>
-
-              <div className="pt-2 border-t border-amber-200 flex items-center justify-between">
-                <span className="text-sm font-bold text-slate-900">Profit Per Cookie:</span>
-                <span className={`text-xl font-extrabold ${
-                  profitPerCookie >= 0 ? 'text-emerald-700' : 'text-rose-600'
-                }`}>
-                  {formatMoney(profitPerCookie, currencySymbol)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-600 font-medium">Recipe Margin:</span>
-                <span className="font-bold text-purple-800">
-                  {cookieMarginPercent.toFixed(1)}%
-                </span>
+              <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 space-y-1">
+                <div className="flex justify-between text-xs font-bold text-emerald-700 uppercase">Selling Price: <span>{formatMoney(12.00, currencySymbol)}</span></div>
+                <div className="flex justify-between text-sm font-black text-emerald-900">Profit per Cookie: <span>{formatMoney(12.00 - (pistTotalCost / cookiesPerBatch), currencySymbol)}</span></div>
+                <div className="flex justify-between text-xs font-bold text-emerald-600">Total Batch Profit: <span>{formatMoney(pistSales - pistTotalCost, currencySymbol)}</span></div>
               </div>
             </div>
 
-            {/* Break-Even Insight Box */}
-            <div className="bg-amber-100/80 border border-amber-300 p-3.5 rounded-2xl space-y-1">
-              <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
-                <CheckCircle2 className="w-4 h-4 text-amber-700" />
-                <span>Stall Rental Break-Even Target</span>
+            {/* Chocolate Recipe Card */}
+            <div className="bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl">Chocolate</div>
+              <h5 className="font-extrabold text-amber-800 mb-4 text-lg">Chocolate Dubai Chewy</h5>
+              <div className="space-y-2 mb-4 text-sm">
+                <div className="flex justify-between text-slate-600"><span>Ingredients Cost:</span> <span>{formatMoney(chocIngCost, currencySymbol)}</span></div>
+                <div className="flex justify-between text-slate-600"><span>Packaging Cost:</span> <span>{formatMoney(totalPackCost, currencySymbol)}</span></div>
+                <div className="flex justify-between font-bold text-slate-800 border-t border-amber-100 pt-2"><span>Total Batch Cost:</span> <span>{formatMoney(chocTotalCost, currencySymbol)}</span></div>
+                <div className="flex justify-between font-bold text-amber-700"><span>Cost per Cookie:</span> <span>{formatMoney(chocTotalCost / cookiesPerBatch, currencySymbol)}</span></div>
               </div>
-              <p className="text-xs text-slate-800 leading-relaxed">
-                Sell at least <span className="font-extrabold text-amber-900 underline">{breakEvenCookies} cookies</span> today to cover your {formatMoney(stallRental, currencySymbol)} stall rental!
-              </p>
+              <div className="bg-amber-50 p-4 rounded-2xl border border-amber-100 space-y-1">
+                <div className="flex justify-between text-xs font-bold text-amber-700 uppercase">Selling Price: <span>{formatMoney(11.00, currencySymbol)}</span></div>
+                <div className="flex justify-between text-sm font-black text-amber-900">Profit per Cookie: <span>{formatMoney(11.00 - (chocTotalCost / cookiesPerBatch), currencySymbol)}</span></div>
+                <div className="flex justify-between text-xs font-bold text-amber-600">Total Batch Profit: <span>{formatMoney(chocSales - chocTotalCost, currencySymbol)}</span></div>
+              </div>
             </div>
           </div>
         </div>

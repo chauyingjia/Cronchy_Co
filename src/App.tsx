@@ -291,9 +291,7 @@ export default function App() {
 
           {currentTab === 'profit' && (
             <ProfitCalculator
-              transactions={transactions}
               currencySymbol={settings.currencySymbol}
-              fontSizeMode={settings.fontSizeMode}
             />
           )}
 
